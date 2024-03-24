@@ -1,0 +1,190 @@
+<project name="study"
+         default="help"	
+         basedir="."
+         xmlns="antlib:org.apache.tools.ant"
+         xmlns:liquibase="antlib:liquibase.integration.ant"
+         xmlns:au="antlib:org.apache.ant.antunit"
+         xmlns:db="antlib:liquibase.integration.ant.test">
+
+	
+    <!-- ========================= PROPERTIES ============================== -->
+
+    <property environment="env" />
+    <property file="build_${env.COMPUTERNAME}.properties" />
+    <property file="build.properties" />
+    <property file="smtp.properties" />
+
+    <!-- ================================================================== -->
+
+    <property name="src_dir" value="src" />
+    <property name="build_dir" value=".build" />
+    <property name="distr_dir" value=".distr" />
+    <property name="web_dir" value="web" />
+    <property name="lib_dir" value="${web_dir}/WEB-INF/lib" />
+    <property name="tools_dir" value="tools" />
+    <property name="reports_dir" value=".reports" />
+
+    <!-- ================================================================== -->
+
+    <path id="cp">
+        <fileset dir="${lib_dir}" includes="*.jar" />
+        <pathelement location="${tomcat_dir}/lib/servlet-api.jar" />
+    </path>
+
+    <path id="tools">
+        <fileset dir="${tools_dir}" includes="*.jar" />
+    </path>
+
+    <taskdef resource="liquibase/integration/ant/antlib.xml" uri="antlib:liquibase.integration.ant">
+        <classpath refid="tools" />
+    </taskdef>
+
+    <!-- ================================================================== -->
+    <target name="help">
+        <echo>Options:</echo>
+        <echo> - compile</echo>
+        <echo> - clean</echo>
+        <echo> - dist</echo>
+    </target>
+
+    <!-- =========================== Init ================================== -->
+    <target name="init" depends="clean">
+        <mkdir dir="${build_dir}/web" />
+        <copy todir="${build_dir}/web">
+            <fileset dir="${web_dir}">
+                <exclude name="**/*.cp1251"/>
+                <exclude name="**/*.properties"/>
+            </fileset>
+        </copy>
+        <native2ascii src="${web_dir}/WEB-INF/classes"
+                      dest="${build_dir}/web/WEB-INF/classes"
+                      encoding="cp1251"
+                      ext=".properties"
+                      includes="*.cp1251" />
+        <copy todir="${build_dir}/web" filtering="true">
+            <fileset dir="${web_dir}">
+                <include name="**/*.properties"/>
+            </fileset>
+            <filterset begintoken="@{" endtoken="}" filtersfile="build.properties"/>
+        	<filterset begintoken="@{" endtoken="}" filtersfile="smtp.properties"/>
+        </copy>
+    </target>
+
+    <!-- ================================================================== -->
+    <target name="compile" depends="init" description="compile the source">
+        <mkdir dir="${build_dir}/web/WEB-INF/classes" />
+        <javac srcdir="${src_dir}"
+               destdir="${build_dir}/web/WEB-INF/classes"
+               includeantruntime="true"
+        	debug="true">
+            <classpath refid="cp"/>
+            <classpath refid="tools" />
+        </javac>
+    </target>
+
+    <!-- ================================================================== -->
+    <target name="war" depends="compile">
+        <mkdir dir="${distr_dir}" />
+        <war destfile="${distr_dir}/${ant.project.name}.war"
+             basedir="${build_dir}/web" />
+    </target>
+
+    <!-- ================================================================== -->
+    <target name="clean" description="clean up">
+        <delete dir="${build_dir}" />
+        <delete dir="${distr_dir}" />
+        <delete dir="${reports_dir}" />
+    </target>
+
+    <!-- ================================================================== -->
+
+    <target name="db-create">
+        <sql userid="${db.admin.login}"
+             password="${db.admin.passwd}"
+             url="${jdbc.url}/"
+             driver="${jdbc.driver.class}"
+             classpathref="cp"
+             autocommit="on">
+            DROP DATABASE IF EXISTS ${db.name};
+    
+            DROP ROLE IF EXISTS ${db.owner};
+
+            CREATE ROLE ${db.owner} LOGIN
+              PASSWORD '${db.passwd}'
+              SUPERUSER INHERIT CREATEDB CREATEROLE REPLICATION;
+
+            CREATE DATABASE ${db.name}
+              WITH OWNER = ${db.owner}
+                   ENCODING = 'UTF8'
+                   TABLESPACE = pg_default
+                   CONNECTION LIMIT = -1;
+        </sql>
+    </target>
+
+    <target name="db-update">
+        <liquibase:database id="study"
+                            driver="${jdbc.driver.class}"
+                            url="${jdbc.url}/${db.name}"
+                            user="${db.login}"
+                            password="${db.passwd}"
+                            databasechangeloglocktablename="_loglock"
+                            databasechangelogtablename="_log" />
+
+        <liquibase:updateDatabase changelogfile="db/main.xml"
+                                  databaseref="study"
+                                  classpathref="cp"
+                                  outputencoding="UTF-8" />
+    </target>
+
+    <target name="db-tests">
+        <liquibase:database id="study"
+                            driver="${jdbc.driver.class}"
+                            url="${jdbc.url}/${db.name}"
+                            user="${db.login}"
+                            password="${db.passwd}"
+                            databasechangeloglocktablename="_loglock"
+                            databasechangelogtablename="_log" />
+
+        <liquibase:updateDatabase changelogfile="db/test/test-data.xml"
+                                  databaseref="study"
+                                  classpathref="cp"
+                                  outputencoding="UTF-8" />
+    </target>
+
+    <!-- ============================ Test ================================= -->
+    <target name="test" depends="compile">
+        <mkdir dir="${reports_dir}/tests" />
+
+        <junit forkmode="perBatch"
+               printsummary="yes"
+               haltonfailure="yes"
+               haltonerror="yes"
+               maxmemory="256m">
+
+            <classpath refid="tools" />
+
+            <classpath>
+                <path>
+                    <fileset dir="${build_dir}/web/WEB-INF/lib">
+                        <include name="**/*.jar" />
+                    </fileset>
+                </path>
+                <pathelement location="${tomcat_dir}/lib/servlet-api.jar" />
+                <pathelement location="${build_dir}/web/WEB-INF/classes" />
+            </classpath>
+
+            <jvmarg line="-Dcatalina.base=${build_dir}" />
+
+            <formatter type="plain" usefile="false" />
+            <formatter type="xml" />
+
+            <!--jvmarg value ="-XX:-UseSplitVerifier" /-->
+
+            <batchtest fork="yes" todir="${reports_dir}/tests" haltonerror="no">
+                <fileset dir="${build_dir}/web/WEB-INF/classes" includes="**/*SuiteTests.class" />
+            </batchtest>
+        </junit>
+
+    </target>
+
+</project>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Role">
+
+    <resultMap id="role" type="Role">
+        <id property="id" column="id" />
+        <result property="role" column="role" javaType="string" />
+    </resultMap>
+
+    <insert id="create" parameterType="Role">
+        <selectKey order="BEFORE" keyProperty="id" resultType="long">
+            SELECT nextval('public.roles_id_seq')
+        </selectKey>
+        INSERT INTO public.roles (id, role) VALUES (#{id}, #{role})
+    </insert>
+
+    <select id="read" parameterType="long" resultMap="role">
+        SELECT p.id,
+        p.name
+        FROM public.roles p
+        WHERE p.id = #{id}
+    </select>
+
+    <update id="update" parameterType="Role">
+        UPDATE public.roles
+        SET name = #{role}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="long">
+        DELETE FROM
+        public.roles
+        WHERE id = #{id}
+    </delete>
+    
+    <insert id="addUserRoles" parameterType="long">
+        INSERT INTO public.users_roles (user_id, role_id) VALUES (#{uid}, 1)
+    </insert>
+    
+    <insert id="deleteUserRoles" parameterType="long">
+        DELETE FROM public.users_roles WHERE user_id = #{id}
+    </insert>
+    
+        <update id="updateRole" parameterType="map">
+        UPDATE public.users_roles
+        SET role_id = #{role_id}
+        WHERE user_id = #{id}
+    </update>
+        
+</mapper>

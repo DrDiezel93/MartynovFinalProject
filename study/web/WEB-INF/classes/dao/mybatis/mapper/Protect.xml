@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Protect">
+
+	<resultMap id="protect" type="Protect">
+		<id property="id" column="id" />
+		<result property="date_protect" column="date_protect" javaType="java.sql.Date" />
+		<result property="time_protect" column="time_protect" javaType="java.sql.Time" />
+		<result property="note_protect" column="note_protect" javaType="string" />
+		<association property="docs" column="docs" javaType="entity.Docs">
+			<id property="id" column="docs_id" />
+			<result property="date" column="date" javaType="java.sql.Date" />
+			<result property="name" column="name" javaType="string" />
+			<result property="src" column="src" javaType="string" />
+			<association property="user" column="user" javaType="entity.User">
+				<id property="id" column="user_id" />
+				<result property="display_name" column="display_name"
+					javaType="string" />
+				<result property="real_name" column="real_name" javaType="string" />
+				<result property="password" column="password" javaType="string" />
+				<result property="default_email" column="default_email"
+					javaType="string" />
+				<result property="spec" column="spec" javaType="string" />
+				<result property="phone_number" column="phone_number"
+					javaType="string" />
+				<result property="avatar" column="avatar" javaType="string" />
+				<result property="sex" column="sex" javaType="string" />
+				<result property="birthday" column="birthday" javaType="java.sql.Date" />
+			</association>
+		</association>
+	</resultMap>
+ 
+	<insert id="create" parameterType="Protect">
+		<selectKey order="BEFORE" keyProperty="id" resultType="long">
+			SELECT nextval('public.protect_id_seq')
+		</selectKey>
+		INSERT INTO public.protect (id, docs_id,date_protect,time_protect,note_protect) VALUES
+		(#{id},
+		#{docs.id}, #{date_protect}, #{time_protect}, #{note_protect})
+	</insert>
+
+	<select id="read" parameterType="long" resultMap="protect">
+				SELECT
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		d.id,
+		d.user_id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday
+		
+		
+		
+		FROM
+public.protect p
+left join public.docs d ON (p.docs_id = d.id)
+left join public.users u ON (u.id = d.user_id)
+ WHERE p.id
+		= #{id}
+	</select>
+
+	<update id="update" parameterType="Protect">
+		UPDATE public.protect
+		SET docs_id
+		= #{docs.id},
+		date_protect = #{date_protect},
+		time_protect = #{time_protect},
+		note_protect = #{note_protect}
+		WHERE id =
+		#{id}
+	</update>
+
+	<delete id="delete" parameterType="long">
+		DELETE FROM
+		public.protect
+		WHERE id
+		= #{id}
+	</delete>
+
+	<select id="FindByDocs" parameterType="long" resultMap="protect">
+		SELECT
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		d.id,
+		d.user_id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday
+
+		FROM
+public.protect p
+left join public.docs d ON (p.docs_id = d.id)
+left join public.users u ON (u.id = d.user_id)
+ WHERE p.docs_id
+		= #{id}
+	</select>
+
+	
+</mapper>

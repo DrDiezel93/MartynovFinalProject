@@ -1,0 +1,25 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet id="1" author="n.bobkov">
+		<createTable tableName="protect">
+			<column name="id" type="bigint" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false"
+					primaryKeyName="protect_pk" />
+			</column>
+			<column name="docs_id" type="bigint">
+				<constraints referencedTableName="docs"
+					referencedColumnNames="id" foreignKeyName="docs_reports_docs_fk" />
+			</column>
+			<column name="note_protect" type="varchar(4096)" />			
+			<column name="date_protect" type="date" />
+			<column name="time_protect" type="time" />
+		</createTable>
+
+		
+	</changeSet>
+
+</databaseChangeLog>

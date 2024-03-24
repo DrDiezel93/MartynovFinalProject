@@ -1,0 +1,28 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="1" author="User">
+        <insert tableName="roles">
+            <column name="role" value="ROLE_USER" />
+           </insert>
+    </changeSet>
+
+   <changeSet id="2" author="Antiplagiator">
+        <insert tableName="roles">
+            <column name="role" value="ROLE_ANTIPLAGIATOR" />
+          </insert>
+    </changeSet>
+    <changeSet id="3" author="Prepodavatel">
+        <insert tableName="roles">
+            <column name="role" value="ROLE_EXPERT" />
+        </insert>
+    </changeSet>
+        <changeSet id="4" author="troian">
+        <insert tableName="roles">
+            <column name="role" value="ROLE_SECRETARY" />
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="User">
+
+	<resultMap id="user" type="User">
+		<id property="id" column="id" />
+		<result property="display_name" column="display_name" javaType="string" />
+		<result property="real_name" column="real_name" javaType="string" />
+		<result property="password" column="password" javaType="string" />
+		<result property="default_email" column="default_email"
+			javaType="string" />
+					<result property="spec" column="spec"
+			javaType="string" />
+		<result property="phone_number" column="phone_number" javaType="string" />
+		<result property="avatar" column="avatar" javaType="string" />
+		<result property="sex" column="sex" javaType="string" />
+		<result property="birthday" column="birthday" javaType="java.sql.Date" />		
+		<collection property="role" ofType="Role">
+			<id property="id" column="role_id" />
+			<result property="role" column="role_name" />
+		</collection>
+	</resultMap> 
+
+	<insert id="create" parameterType="User">
+		<selectKey order="BEFORE" keyProperty="id" resultType="long">
+			SELECT nextval('public.users_id_seq')
+		</selectKey>
+		INSERT INTO public.users (id,display_name,
+		real_name,password,
+		phone_number,avatar,
+		default_email, spec, sex, birthday)
+		VALUES (#{id},
+		#{display_name},
+		#{real_name},md5(#{password}),#{phone_number},#{avatar},#{default_email},#{spec},
+		#{sex}, #{birthday})
+	</insert>
+
+	<select id="read" parameterType="long" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)		
+		WHERE u.id = #{id}
+	</select>
+
+	<update id="update" parameterType="User">
+		UPDATE public.users SET
+		display_name =
+		#{display_name},
+		real_name = #{real_name},
+		password = md5(#{password}),
+		default_email = #{default_email},
+		spec = #{spec},
+		sex = #{sex},
+		avatar = #{avatar},
+		phone_number = #{phone_number},
+		birthday =
+		#{birthday}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateNoPass" parameterType="User">
+		UPDATE public.users SET
+		display_name =
+		#{display_name},
+		real_name = #{real_name},
+		password = #{password},
+		default_email = #{default_email},
+		spec = #{spec},
+		sex = #{sex},
+		avatar = #{avatar},
+		phone_number = #{phone_number},
+		birthday =
+		#{birthday}
+		WHERE id = #{id}
+	</update>
+
+	<delete id="delete" parameterType="long">
+		DELETE FROM public.users
+		WHERE
+		id = #{id}
+	</delete>
+
+	<select id="findByName" parameterType="string" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+		WHERE u.display_name = #{name}
+	</select>
+
+	<select id="findByEmail" parameterType="string" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+		WHERE u.default_email = #{name}
+	</select>
+
+
+	<select id="findAll" parameterType="string" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+	</select>
+	
+	<select id="findByTwo" parameterType="map" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+		where (u.real_name LIKE('%'||#{real}||'%')) AND (u.display_name LIKE('%'||#{display}||'%'))
+	</select>
+	
+		<select id="findByThree" parameterType="map" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+		where (u.real_name LIKE('%'||#{real}||'%')) AND (u.display_name LIKE('%'||#{display}||'%') AND (u.spec = #{spec}))
+	</select>
+	
+		<select id="findByDiplaySpec" parameterType="map" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+		where (u.spec = #{spec}) AND (u.display_name LIKE('%'||#{display}||'%'))
+	</select>
+	
+			<select id="findByRealSpec" parameterType="map" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+		where (u.spec = #{spec}) AND (u.real_name LIKE('%'||#{real}||'%'))
+	</select>
+	
+	<select id="findByReal" parameterType="string" resultMap="user">
+				SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+		where (u.real_name LIKE('%'||#{real}||'%'))
+	</select>
+	
+	<select id="findByDispaly" parameterType="string" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+		where (u.display_name LIKE('%'||#{display}||'%'))
+	</select>
+	
+		<select id="findBySpec" parameterType="string" resultMap="user">
+		SELECT u.id,
+		u.display_name, u.real_name, u.password,
+		u.default_email,u.spec,
+		u.phone_number,u.avatar,u.sex,u.birthday, r.id AS
+		role_id, r.role AS	role_name
+		FROM
+		public.users u LEFT JOIN public.users_roles ur ON (u.id = ur.user_id)
+		LEFT JOIN public.roles r ON (r.id = ur.role_id)	
+		where (u.spec = #{spec})
+	</select>
+	
+</mapper>

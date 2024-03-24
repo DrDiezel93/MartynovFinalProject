@@ -1,0 +1,26 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="1" author="n.bobkov">
+        <createProcedure>
+	    CREATE OR REPLACE FUNCTION public.selectTop20()
+            RETURNS SETOF docs AS
+            $BODY$
+            DECLARE
+                d date;
+            BEGIN
+                FOR d IN SELECT docs.date FROM docs GROUP BY docs.date ORDER BY docs.date DESC LIMIT 20
+                LOOP
+                    RETURN QUERY (SELECT * FROM docs WHERE docs.date = d limit 20); 
+                END LOOP;
+                RETURN;
+            END
+            $BODY$
+            LANGUAGE plpgsql VOLATILE
+        </createProcedure>
+    </changeSet>
+
+</databaseChangeLog>

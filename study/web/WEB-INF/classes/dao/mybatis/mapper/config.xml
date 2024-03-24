@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<typeAliases>
+		<typeAlias alias="User" type="entity.User" />
+		<typeAlias alias="Role" type="entity.Role" />
+		<typeAlias alias="Docs" type="entity.Docs" />
+		<typeAlias alias="Reports" type="entity.Reports" />
+		<typeAlias alias="Protect" type="entity.Protect" />
+
+
+	</typeAliases>
+	<mappers>
+		<mapper resource="dao/mybatis/mapper/User.xml" />
+		<mapper resource="dao/mybatis/mapper/Role.xml" />
+		<mapper resource="dao/mybatis/mapper/Docs.xml" />
+		<mapper resource="dao/mybatis/mapper/Reports.xml" />
+		<mapper resource="dao/mybatis/mapper/Protect.xml" />
+	</mappers>
+
+</configuration>

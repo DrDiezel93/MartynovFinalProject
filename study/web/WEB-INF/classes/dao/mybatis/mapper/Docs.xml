@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Docs">
+
+	<resultMap id="docs" type="Docs">
+		<id property="id" column="id" />
+		<result property="date" column="date" javaType="java.sql.Date" />
+		<result property="name" column="name" javaType="string" />
+		<result property="src" column="src" javaType="string" />
+		<association property="user" column="user" javaType="entity.User">
+			<id property="id" column="user_id" />
+			<result property="display_name" column="display_name"
+				javaType="string" />
+			<result property="real_name" column="real_name" javaType="string" />
+			<result property="password" column="password" javaType="string" />
+			<result property="default_email" column="default_email"
+				javaType="string" />
+			<result property="spec" column="spec" javaType="string" />
+			<result property="phone_number" column="phone_number"
+				javaType="string" />
+			<result property="avatar" column="avatar" javaType="string" />
+			<result property="sex" column="sex" javaType="string" />
+			<result property="birthday" column="birthday" javaType="java.sql.Date" />
+		</association> 
+		<association property="protect" column="protect" javaType="entity.Protect">
+			<id property="id" column="protect_id" />
+			<result property="date_protect" column="date_protect" />
+			<result property="time_protect" column="time_protect" />
+			<result property="note_protect" column="note_protect" />
+		</association>
+		<collection property="reports" ofType="Reports">
+			<id property="id" column="reports_id" />
+			<result property="date_repotrs" column="date_repotrs" />
+			<result property="time_repotrs" column="time_repotrs" />
+			<result property="src_repotrs" column="src_repotrs" />
+			<result property="note_repotrs" column="note_repotrs" />
+		</collection>
+	</resultMap>
+
+	<insert id="create" parameterType="Docs">
+		<selectKey order="BEFORE" keyProperty="id" resultType="long">
+			SELECT nextval('public.docs_id_seq')
+		</selectKey>
+		INSERT INTO public.docs (id, user_id,date,name,src) VALUES
+		(#{id},
+		#{user.id}, #{date}, #{name}, #{src})
+	</insert>
+
+	<select id="read" parameterType="long" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.docs_id,
+		d.user_id
+		FROM
+
+		public.docs d
+		left join
+		public.users u ON (u.id =
+		d.user_id)
+		left join public.protect p ON
+		(p.docs_id = d.id)
+		left join
+		public.reports r ON (r.docs_id = d.id)
+		WHERE d.id = #{id}
+	</select>
+
+	<update id="update" parameterType="Docs">
+		UPDATE public.docs
+		SET user_id
+		= #{user.id},
+		date = #{date},
+		name = #{name},
+		src = #{src}
+		WHERE id =
+		#{id}
+	</update>
+
+	<delete id="delete" parameterType="long">
+		DELETE FROM
+		public.docs
+		WHERE id
+		= #{id}
+	</delete>
+
+	<select id="findByUserId" parameterType="long" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		d.user_id,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		r.docs_id
+
+		FROM public.docs d
+		left join
+		public.users u ON
+		(u.id = d.user_id)
+		left join public.protect p ON
+		(p.docs_id = d.id)
+		left join public.reports r ON (r.docs_id = d.id)
+		WHERE d.user_id = #{id}
+	</select>
+
+	<select id="findAll" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.docs_id,
+		d.user_id
+		FROM
+
+		public.docs d
+		left join
+		public.users u ON (u.id =
+		d.user_id)
+		left join public.protect p ON
+		(p.docs_id = d.id)
+		left join
+		public.reports r ON (r.docs_id = d.id)
+
+		ORDER BY d.id ASC
+	</select>
+
+	<select id="findByTwo" parameterType="map" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.docs_id,
+		d.user_id
+		FROM
+
+		public.docs d
+		left join public.users u ON (u.id =
+		d.user_id)
+		left join public.protect
+		p ON (p.docs_id = d.id)
+		left join
+		public.reports r ON (r.docs_id = d.id)
+		where (d.name LIKE('%'||#{name}||'%')) AND (p.date_protect = #{date})
+		
+		ORDER BY d.id ASC
+	</select>
+
+	<select id="findDocsByName" parameterType="map" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.docs_id,
+		d.user_id
+		FROM
+
+		public.docs d
+		left join public.users u ON (u.id =
+		d.user_id)
+		left join public.protect
+		p ON (p.docs_id = d.id)
+		left join
+		public.reports r ON (r.docs_id = d.id)
+		where (d.name LIKE('%'||#{name}||'%'))
+		
+		ORDER BY d.id ASC
+	</select>
+
+	<select id="findDocsByDate" parameterType="map" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.docs_id,
+		d.user_id
+		FROM
+
+		public.docs d
+		left join public.users u ON (u.id =
+		d.user_id)
+		left join public.protect
+		p ON (p.docs_id = d.id)
+		left join
+		public.reports r ON (r.docs_id = d.id)
+		where (p.date_protect = #{date})
+		
+		ORDER BY d.id ASC
+	</select>
+
+	<select id="selectTop20" resultMap="docs">
+		SELECT * FROM selectTop20();
+	</select>
+
+	<select id="findDocsSpec" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.docs_id,
+		d.user_id
+		FROM
+
+		public.docs d
+		left join public.users u ON (u.id =
+		d.user_id)
+		left join public.protect
+		p ON (p.docs_id = d.id)
+		left join
+		public.reports r ON (r.docs_id = d.id)
+		WHERE u.spec = 'Специалист'
+		order by r.id ASC
+	</select>
+
+	<select id="findDocsMag" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.docs_id,
+		d.user_id
+		FROM
+
+		public.docs d
+		left join public.users u ON (u.id =
+		d.user_id)
+		left join public.protect
+		p ON (p.docs_id = d.id)
+		left join
+		public.reports r ON (r.docs_id = d.id)
+		WHERE u.spec = 'Магистрант'
+		order by r.id ASC
+	</select>
+
+	<select id="findDocsAsp" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.docs_id,
+		d.user_id
+		FROM
+
+		public.docs d
+		left join public.users u ON (u.id =
+		d.user_id)
+		left join public.protect
+		p ON (p.docs_id = d.id)
+		left join
+		public.reports r ON (r.docs_id = d.id)
+		WHERE u.spec = 'Аспирант'
+		order by r.id ASC
+	</select>
+
+	<select id="findDocsBak" resultMap="docs">
+		SELECT
+		d.id,
+		d.date,
+		d.name,
+		d.src,
+		u.id,
+		u.display_name,
+		u.real_name,
+		u.phone_number,
+		u.password,
+		u.avatar,
+		u.default_email,
+		u.spec,
+		u.sex,
+		u.birthday,
+		r.id,
+		r.users_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs,
+		p.id,
+		p.docs_id,
+		p.date_protect,
+		p.time_protect,
+		p.note_protect,
+		r.docs_id,
+		d.user_id
+		FROM
+
+		public.docs d
+		left join public.users u ON (u.id =
+		d.user_id)
+		left join public.protect
+		p ON (p.docs_id = d.id)
+		left join
+		public.reports r ON (r.docs_id = d.id)
+		WHERE u.spec = 'Бакалавр'
+		order by r.id ASC
+	</select>
+</mapper>

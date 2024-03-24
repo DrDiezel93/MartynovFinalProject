@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+          http://www.springframework.org/schema/context
+          http://www.springframework.org/schema/context/spring-context.xsd
+          http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/security
+          http://www.springframework.org/schema/security/spring-security.xsd">
+
+	<security:global-method-security
+		pre-post-annotations="enabled" />
+
+	<security:http pattern="/signup.html" security="none" />
+	<security:http pattern="/index.html" security="none" />
+	<security:http pattern="/findindex.html" security="none" />
+	<security:http pattern="/docs.html" security="none" />
+	<security:http pattern="/reg.html" security="none" />
+	<security:http pattern="/secutity.html" security="none" />
+	<security:http pattern="/recovery.html" security="none" />
+	<security:http pattern="/recoverypass.html" security="none" />
+	<security:http pattern="/about.html" security="none" />
+
+	<security:http auto-config="true" use-expressions="true">
+		<security:csrf disabled="true" />
+		<security:intercept-url pattern="/**/*.html"
+			access="hasAnyRole('ROLE_USER','ROLE_ANTIPLAGIATOR','ROLE_EXPERT','ROLE_SECRETARY')" />
+		<security:form-login login-page="/index.html"
+			default-target-url="/mypage.html" authentication-failure-url="/index.html"
+			login-processing-url="/j_security_check" username-parameter="j_username"
+			password-parameter="j_password" />
+		<security:logout logout-url="/logout" />
+		<security:remember-me user-service-ref="userDetailsService"
+			remember-me-parameter="j_remember_me" />
+	</security:http>
+
+	<security:authentication-manager>
+		<security:authentication-provider
+			user-service-ref="userDetailsService">
+			<security:password-encoder hash="md5" />
+		</security:authentication-provider>
+	</security:authentication-manager>
+
+	<bean id="loggerListener"
+		class="org.springframework.security.authentication.event.LoggerListener" />
+
+	<bean id="userDetailsService" class="security.UserSecurityService">
+		<property name="srv" ref="userService" />
+	</bean>
+
+</beans>

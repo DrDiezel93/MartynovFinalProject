@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Reports">
+
+	<resultMap id="reports" type="Reports">
+		<id property="id" column="id" />
+		<result property="date_repotrs" column="date_repotrs" javaType="java.sql.Date" />
+		<result property="time_repotrs" column="time_repotrs" javaType="java.sql.Time" />
+		<result property="src_repotrs" column="src_repotrs" javaType="string" />
+		<result property="note_repotrs" column="note_repotrs" javaType="string" />
+		<association property="user" column="user" javaType="entity.User">
+			<id property="id" column="user_id" />
+		</association>
+		<association property="docs" column="docs" javaType="entity.Docs">
+			<id property="id" column="docs_id" />
+		</association>
+	</resultMap>
+  
+	<insert id="create" parameterType="Reports">
+		<selectKey order="BEFORE" keyProperty="id" resultType="long">
+			SELECT nextval('public.reports_id_seq')
+		</selectKey>
+		INSERT INTO public.reports (id,users_id,docs_id, note_repotrs,
+		src_repotrs,date_repotrs,time_repotrs) VALUES
+		(#{id},
+		#{user.id},
+		#{docs.id}, #{note_repotrs}, #{src_repotrs}, #{date_repotrs},
+		#{time_repotrs})
+	</insert>
+
+	<select id="read" parameterType="long" resultMap="reports">
+		SELECT r.id,
+		r.users_id,r.docs_id, r.note_repotrs,
+		r.src_repotrs,r.date_repotrs,r.time_repotrs r
+		from public.reports r
+		WHERE r.id = #{id}
+	</select>
+
+
+	<select id="read_reports" parameterType="map" resultMap="reports">
+		SELECT r.id,
+		r.users_id,r.docs_id, r.note_repotrs,
+		r.src_repotrs,r.date_repotrs,r.time_repotrs r
+		from public.reports r
+		WHERE (r.docs_id = #{id}) and (r.time_repotrs = #{time_repotrs})and (r.date_repotrs = #{date_repotrs})
+	</select>
+	
+	<update id="update" parameterType="Reports">
+		UPDATE public.reports
+		SET users_id= #{user.id},
+		docs_id = #{docs.id},
+		note_repotrs = #{note_repotrs},
+		date_repotrs = #{date_repotrs},
+		time_repotrs = #{time_repotrs},
+		src_repotrs = #{src_repotrs}
+		WHERE id = 	#{id}
+	</update>
+
+	<delete id="delete" parameterType="long">
+		DELETE FROM
+		public.reports
+		WHERE id
+		= #{id}
+	</delete>
+
+<select id="findAll" resultMap="reports">
+			SELECT
+
+		r.id,
+		r.users_id,
+		r.docs_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs
+		FROM
+
+		public.reports r 
+
+	</select>
+	
+	<select id="findByDocs" parameterType="long" resultMap="reports">
+			SELECT
+
+		r.id,
+		r.users_id,
+		r.docs_id,
+		r.date_repotrs,
+		r.time_repotrs,
+		r.src_repotrs,
+		r.note_repotrs
+		FROM
+
+		public.reports r 
+		where r.docs_id = #{docs_id}
+ 
+	</select>
+	
+</mapper>

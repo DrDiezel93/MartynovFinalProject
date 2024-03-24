@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/task 
+        http://www.springframework.org/schema/task/spring-task.xsd">
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations" value="classpath:/db.properties" />
+	</bean>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver.class}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.login}" />
+		<property name="password" value="${jdbc.passwd}" />
+	</bean>
+
+	<bean id="config" class="org.apache.commons.configuration.DatabaseConfiguration">
+		<constructor-arg index="0" ref="dataSource" />
+		<constructor-arg index="1" value="public.configs" />
+		<constructor-arg index="2" value="key" />
+		<constructor-arg index="3" value="value" />
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:/dao/mybatis/mapper/config.xml" />
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+		id="txManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="*" rollback-for="java.lang.Throwable"
+				isolation="READ_COMMITTED" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut id="txOperation"
+			expression="execution(* service..*ServiceImpl.*(..))" />
+		<aop:advisor pointcut-ref="txOperation" advice-ref="txAdvice" />
+	</aop:config>
+
+	<bean id="dao" class="org.mybatis.spring.support.SqlSessionDaoSupport"
+		abstract="true">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+
+	<bean id="userDao" class="dao.mybatis.UserMapper" parent="dao" />
+	<bean id="roleDao" class="dao.mybatis.RoleMapper" parent="dao" />
+	<bean id="docsDao" class="dao.mybatis.DocsMapper" parent="dao" />
+	<bean id="reportsDao" class="dao.mybatis.ReportsMapper" parent="dao" />
+	<bean id="protectDao" class="dao.mybatis.ProtectMapper" parent="dao" />
+
+	<bean id="userDetailsService" class="security.UserSecurityService">
+		<property name="srv" ref="userService" />
+	</bean>
+
+	<bean id="userService" class="service.UserServiceImpl">
+		<property name="userDao" ref="userDao" />
+		<property name="roleDao" ref="roleDao" />
+		<property name="uds" ref="userDetailsService" />
+		<property name="docsDao" ref="docsDao" />
+		<property name="reportsDao" ref="reportsDao" />	
+		<property name="protectDao" ref="protectDao" />	
+	</bean>
+	
+	<bean id="docsService" class="service.DocsServiceImpl">
+		<property name="userDao" ref="userDao" />
+		<property name="docsDao" ref="docsDao" />
+		<property name="reportsDao" ref="reportsDao" />	
+		<property name="protectDao" ref="protectDao" />		
+	</bean>
+	
+	<bean id="reportsService" class="service.ReportsServiceImpl">
+		<property name="reportsDao" ref="reportsDao" />	
+		<property name="docsDao" ref="docsDao" />	
+	</bean>
+	
+		<bean id="protectService" class="service.ProtectServiceImpl">
+		<property name="protectDao" ref="protectDao" />	
+		<property name="docsDao" ref="docsDao" />	
+	</bean>
+
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="10000000" />
+	</bean>
+
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="smtp.gmail.com" />
+		<property name="port" value="587" />
+		<property name="username" value="@gmail.com" />
+		<property name="password" value="random" />
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.transport.protocol">smtp</prop>
+				<prop key="mail.smtp.auth">true</prop>
+				<prop key="mail.smtp.starttls.enable">true</prop>
+				<prop key="mail.debug">true</prop>
+				<prop key="mail.smtp.ssl.trust">smtp.gmail.com</prop>
+
+			</props>
+		</property>
+	</bean>
+
+	<bean id="emailService" class="service.EmailServiceImpl">
+		<property name="mailSender" ref="mailSender" />
+	</bean>
+
+
+</beans>
